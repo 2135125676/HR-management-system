@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.group2.cms.mapper.CategoryMapper">
+    <select id="selectAll" resultType="com.group2.cms.service.dto.CategoryDTO">
+        SELECT
+        category_id AS id,
+        category_name AS name,
+        category_description AS description,
+        category_order AS corder,
+        category_parent_id AS parentId
+        FROM cms_category
+        WHERE deleted = 0 <!-- 只查询未删除的数据 -->
+        ORDER BY category_order ASC<!-- 按栏目序号排序 -->
+    </select>
+    <!-- 根据父栏目ID查询直接子栏目ID -->
+    <select id="selectChildIdsByParentId" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+        SELECT category_id
+        FROM cms_category
+        WHERE category_parent_id = #{parentId}
+    </select>
+    <select id="countDuplicateName" resultType="java.lang.Integer">
+        SELECT COUNT(category_id)
+        FROM cms_category
+        WHERE
+        deleted = 0
+        AND category_name = #{name}
+        <if test="excludeId != null and excludeId > 0">
+            AND category_id != #{excludeId}
+        </if>
+    </select>
+
+    <!-- 批量更新deleted状态 -->
+    <update id="batchUpdateDeleted">
+        UPDATE cms_category
+        SET deleted = #{deleted}
+        WHERE category_id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+</mapper>

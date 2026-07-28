@@ -1,0 +1,48 @@
+server:
+  port: 8888
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/cms?serverTimezone=GMT%2B8
+    username: root
+    password: root
+  servlet:
+    multipart: #设置文件上传的数据大小
+      max-file-size: 50MB
+      max-request-size: 50MB
+logging:
+  level:
+    com.group2.cms: debug
+
+mybatis-plus:
+  global-config:
+    db-config:
+      logic-delete-field: deleted # 逻辑删除字段名(deleted为实体类属性名称)
+      logic-delete-value: 1 # 逻辑已删除值。可选，默认值为 1
+      logic-not-delete-value: 0 # 逻辑未删除值。可选，默认值为 0
+  # 开启SQL日志输出
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl  # 输出到控制台
+
+# 自定义配置信息
+jwt:
+  key: cms123   # 秘钥
+  expTime: 200     # 过期时间（分钟）
+
+app:
+  crypto:
+    sm4-key: "MySecretKeycmsCN"  # 仅用于本地测试！
+
+knife4j:
+  enable: true
+springdoc:
+  default-flat-param-object: true #解决表单数据的swagger显示问题
+#七牛云个人配置信息
+qiniu:
+  oss:
+    access-key: yVFh6W1iNpx12LTcaQP5R1GpIyZ3N9An5V39w_Wa
+    secret-key: MznAiPGj0_KxbrbcTELTV9iH8MZhs57Qmdj1F98n
+    bucket: cms-0102
+    domain: http://t80rtluyp.hn-bkt.clouddn.com/ # 七牛云空间域名
+
+

@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.group2.cms.mapper.ArticleMapper">
+    <select id="selectByArticleId" resultMap="selectByPageResultMap">
+        SELECT
+            a.*,
+            c.category_id, c.category_name, c.category_description, c.category_order, c.category_parent_id, c.deleted,
+            u.id, u.username, u.`password`, u.telephone, u.email, u.realname, u.icon, u.gender, u.dob, u.register_time, u.`status`, u.role,
+            co.comment_id, co.comment_content, co.comment_time, co.comment_status, co.comment_user_id, co.comment_parent_id, co.comment_parent_id, co.deleted
+        from cms_article a
+                 left join cms_category c on a.article_category_id = c.category_id
+                 left join base_user u on a.article_user_id = u.id
+                 left join cms_comment co on a.article_id = co.comment_article_id
+            ${ew.customSqlSegment}
+    </select>
+
+    <select id="selectCommentsByArticleIds" resultType="com.group2.cms.entity.Comment">
+        SELECT
+            comment_id AS id,
+            comment_content AS content,
+            comment_time AS time,
+        comment_status AS status,
+        comment_user_id AS userId,
+        comment_article_id AS articleId,
+        comment_parent_id AS parentId,
+        deleted
+        FROM cms_comment
+        WHERE comment_article_id = #{articleId}
+          AND deleted = 0
+    </select>
+
+<!--    重新开始-->
+    <select id="selectArticleIdPage" resultType="com.group2.cms.entity.Article">
+        select
+            a.article_id as id,
+            a.article_title,
+            a.article_content,
+            a.article_publish_time,
+            a.article_read_times,
+            a.article_status,
+            a.article_thump_up,
+            a.article_cover,
+            a.article_user_id,
+            a.article_category_id,
+            a.deleted
+            from cms_article a
+            ${ew.customSqlSegment}
+    </select>
+
+    <select id="selectArticleByIds" resultMap="selectByPageResultMap">
+        SELECT
+        a.article_id,
+        a.article_title,
+        a.article_content,
+        a.article_publish_time,
+        a.article_read_times,
+        a.article_status,
+        a.article_thump_up,
+        a.article_cover,
+        a.article_user_id,
+        a.article_category_id,
+        c.category_id,
+        c.category_name,
+        c.category_description,
+        c.category_order,
+        c.category_parent_id,
+        u.id,
+        u.username,
+        u.password,
+        u.telephone,
+        u.email,
+        u.realname,
+        u.icon,
+        u.gender,
+        u.dob,
+        u.register_time,
+        u.status,
+        u.role,
+        cm.comment_id,
+        cm.comment_content,
+        cm.comment_time,
+        cm.comment_status,
+        cm.comment_user_id,
+        cm.comment_article_id,
+        cm.comment_parent_id,
+        cm.deleted
+        FROM cms_article a
+        LEFT JOIN cms_category c ON a.article_category_id = c.category_id
+        LEFT JOIN base_user u ON a.article_user_id = u.id
+        LEFT JOIN cms_comment cm ON a.article_id = cm.comment_article_id and cm.deleted = 0
+        WHERE a.article_id IN
+        <foreach collection="articleIdList" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND a.deleted = 0
+        <!-- 用 ew.sqlSegment 替代 ew.customSqlSegment（sqlSegment 不带 WHERE 关键字） -->
+        <if test="ew != null and ew.sqlSegment != null and ew.sqlSegment != ''">
+            AND ${ew.sqlSegment}
+        </if>
+    </select>
+
+    <resultMap id="selectByPageResultMap" type="com.group2.cms.web.vo.ArticlePageVO">
+        <id column="article_id" property="id"></id>
+        <result column="article_title" property="title"></result>
+        <result column="article_content" property="content"></result>
+        <result column="article_publish_time" property="publishTime"></result>
+        <result column="article_read_times" property="readTimes"></result>
+        <result column="article_status" property="status"></result>
+        <result column="article_thump_up" property="thumpUp"></result>
+        <result column="article_cover" property="cover"></result>
+        <result column="article_user_id" property="userId"></result>
+        <result column="article_category_id" property="categoryId"></result>
+        <result column="deleted" property="deleted"></result>
+        <association property="category" resultMap="categoryResultMap"></association>
+        <association property="baseUser" resultMap="userResultMap"></association>
+        <collection property="comments" resultMap="commentResultMap"></collection>
+    </resultMap>
+
+    <resultMap id="commentResultMap" type="com.group2.cms.entity.Comment">
+        <id column="comment_id" property="id"></id>
+        <result column="comment_content" property="content"></result>
+        <result column="comment_time" property="time"></result>
+        <result column="comment_status" property="status"></result>
+        <result column="comment_user_id" property="userId"></result>
+        <result column="comment_article_id" property="articleId"></result>
+        <result column="comment_parent_id" property="parentId"></result>
+        <result column="deleted" property="deleted"></result>
+    </resultMap>
+
+    <resultMap id="userResultMap" type="com.group2.cms.entity.User">
+        <id column="id" property="id"></id>
+        <result column="username" property="username"></result>
+        <result column="password" property="password"></result>
+        <result column="telephone" property="telephone"></result>
+        <result column="email" property="email"></result>
+        <result column="realname" property="realname"></result>
+        <result column="icon" property="icon"></result>
+        <result column="gender" property="gender"></result>
+        <result column="dob" property="dob"></result>
+        <result column="register_time" property="registerTime"></result>
+        <result column="status" property="status"></result>
+        <result column="role" property="role"></result>
+    </resultMap>
+
+    <resultMap id="categoryResultMap" type="com.group2.cms.entity.Category">
+        <id column="category_id" property="id"></id>
+        <result column="category_name" property="name"></result>
+        <result column="category_description" property="description"></result>
+        <result column="category_order" property="corder"></result>
+        <result column="category_parent_id" property="parentId"></result>
+        <result column="deleted" property="deleted"></result>
+    </resultMap>
+</mapper>
